@@ -26,6 +26,7 @@ The initialization (`init_path_finder`) must take a number of columns and rows s
 The callback `fill_func` is necessary to define which cells are passable and which are non-passable:
 
 ```c
+/* The parameters `col` and `row` indicate the cell of the map we are setting a state (passable or non-passable) */
 static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row)
 {
 	struct game_context *game_context = pf->data;
@@ -40,6 +41,7 @@ static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row)
 The callback `score_func` is optional and is called during the `path_finder_find` execution. The callback also takes a custom pointer, useful to point to a specific object. Use it to add custom weight to the cells:
 
 ```c
+/* The parameters `col` and `row` indicate the cell of the map we are setting a score */
 static int32_t score_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
 {
 	struct game_context *game_context = pf->data;
