@@ -55,11 +55,13 @@ static int32_t score_cb(struct path_finder *pf, int32_t col, int32_t row, void *
 }
 ```
 
-To check if a cell is a path, access the path finder array directly or use `path_finder_is_path` (be careful, this function doesn't check the passed values of column and row):
+To check if a cell is a path, access the path finder array directly or use `path_finder_is_path` (be careful, this function doesn't check the passed values of column and row are inside the range of the map dimensions):
 
 ```c
 bool is_cell_path = path_finder_is_path(&pf, col, row);
 ```
+
+If a path is found, the value of `has_path` inside the structure `path_finder` is set to `true`.
 
 ## LICENSE
 
