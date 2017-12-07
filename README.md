@@ -26,7 +26,7 @@ The initialization (`init_path_finder`) must take a number of columns and rows s
 The callback `fill_func` is necessary to define which cells are passable and which are non-passable:
 
 ```c
-/* The parameters `col` and `row` indicate the cell of the map we are setting a state (passable or non-passable) */
+/* The parameters `col` and `row` indicate the cell of the map we are setting as passable or non-passable */
 static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row)
 {
 	struct game_context *game_context = pf->data;
