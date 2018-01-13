@@ -1,5 +1,7 @@
 # Micro A Star Path Finder
 
+[![Build Status](https://travis-ci.org/ferreiradaselva/uastar.svg?branch=master)](https://travis-ci.org/ferreiradaselva/uastar)
+
 This is a minimal A* path finder implementation in C:
 
 - Fast.
