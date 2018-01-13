@@ -7,12 +7,12 @@ This is a minimal A* path finder implementation in C:
 
 ## Usage
 
-The maximum and minimum size of the map is defined by `MAX_COLS` and `MAX_ROWS`. Those are already declared in the header `uastar.h`, but can be modified to support a larger map.
+The maximum size of the map is defined by `MAX_COLS` and `MAX_ROWS`. Those are already declared in the header `uastar.h`, but can be modified to support a larger map.
 
 ```c
 struct path_finder pf = {0};
 init_path_finder(&pf, cols, rows);
-pf.data = game_context;
+pf.data = game;
 pf.fill_func = fill_cb; /* Callback to fill the initial state of the cells */
 pf.score_func = score_cb; /* Callback to add custom score to the path */
 path_finder_fill(&pf);
@@ -29,9 +29,9 @@ The callback `fill_func` is necessary to define which cells are passable and whi
 /* The parameters `col` and `row` indicate the cell of the map we are setting as passable or non-passable */
 static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row)
 {
-	struct game_context *game_context = pf->data;
+	struct game *game = pf->data;
 	bool is_passable = true;
-	if (is_wall(game_context, col, row)) {
+	if (is_wall(game, col, row)) {
 		is_passable = false;
 	}
 	return is_passable;
@@ -44,10 +44,10 @@ The callback `score_func` is optional and is called during the `path_finder_find
 /* The parameters `col` and `row` indicate the cell of the map we are setting a score */
 static int32_t score_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
 {
-	struct game_context *game_context = pf->data;
+	struct game *game = pf->data;
 	struct game_object *game_object = data;
 	int32_t value = 0;
-	if (is_danger_zone(game_context, col, row)) {
+	if (is_danger_zone(game, col, row)) {
 		value = 5; /* The higher the value, more avoided the cell is */ 
 		if (is_fearless(game_object)) {
 			value = 0;
