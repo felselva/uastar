@@ -176,6 +176,15 @@ int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row)
 	return pf->f_score[row * pf->cols + col];
 }
 
+bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row)
+{
+	bool result = false;
+	if (pf->map[row * pf->cols + col] != PATH_FINDER_NON_PASSABLE) {
+		result = true;
+	}
+	return result;
+}
+
 bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row)
 {
 	bool result = false;

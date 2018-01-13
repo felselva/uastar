@@ -57,6 +57,7 @@ struct path_finder {
 void path_finder_fill(struct path_finder *pf, void *data);
 void path_finder_find(struct path_finder *pf, void *data);
 int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row);
+bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_start(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row);
