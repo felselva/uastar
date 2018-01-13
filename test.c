@@ -103,5 +103,5 @@ int main(int argc, char **args)
 	path_finder_set_end(&pf, ((double)random() / (double)RAND_MAX) * (WIDTH - 1), ((double)random() / (double)RAND_MAX) * (HEIGHT - 1));
 	path_finder_find(&pf, NULL);
 	print_map(&pf);
-	return 0;
+	return EXIT_SUCCESS;
 }
