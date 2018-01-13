@@ -4,4 +4,4 @@ compiler:
   - gcc
 
 script:
-  - ./run_tests.sh
+  - ./run_test.sh
