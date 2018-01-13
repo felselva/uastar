@@ -15,7 +15,7 @@ init_path_finder(&pf, cols, rows);
 pf.data = game;
 pf.fill_func = fill_cb; /* Callback to fill the initial state of the cells */
 pf.score_func = score_cb; /* Callback to add custom score to the path */
-path_finder_fill(&pf);
+path_finder_fill(&pf, game_object);
 path_finder_set_start(&pf, from_col, from_row);
 path_finder_set_end(&pf, to_col, to_row);
 path_finder_find(&pf, game_object);
@@ -23,16 +23,20 @@ path_finder_find(&pf, game_object);
 
 The initialization (`init_path_finder`) must take a number of columns and rows smaller than or equal to `MAX_COLS` and `MAX_ROWS`.
 
-The callback `fill_func` is necessary to define which cells are passable and which are non-passable:
+The callback `fill_func` is necessary to define which cells are passable and which are non-passable. Te callback also takes a custom pointer, useful to point to a specific object:
 
 ```c
 /* The parameters `col` and `row` indicate the cell of the map we are setting as passable or non-passable */
-static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row)
+static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
 {
 	struct game *game = pf->data;
+	struct game_object *game_object = data;
 	bool is_passable = true;
 	if (is_wall(game, col, row)) {
 		is_passable = false;
+		if (can_jump_walls(game_object)) {
+			is_passable = true;
+		}
 	}
 	return is_passable;
 }
@@ -48,7 +52,7 @@ static int32_t score_cb(struct path_finder *pf, int32_t col, int32_t row, void *
 	struct game_object *game_object = data;
 	int32_t value = 0;
 	if (is_danger_zone(game, col, row)) {
-		value = 5; /* The higher the value, more avoided the cell is */ 
+		value = 5; /* The higher the value, more avoided the cell is */
 		if (is_fearless(game_object)) {
 			value = 0;
 		}
