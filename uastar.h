@@ -49,13 +49,14 @@ struct path_finder {
 	int32_t g_score[MAX_COLS * MAX_ROWS];
 	int32_t f_score[MAX_COLS * MAX_ROWS];
 	int32_t map[MAX_COLS * MAX_ROWS];
-	bool (*fill_func)(struct path_finder *pf, int32_t col, int32_t row);
+	bool (*fill_func)(struct path_finder *pf, int32_t col, int32_t row, void *data);
 	int32_t (*score_func)(struct path_finder *pf, int32_t col, int32_t row, void *data);
 	void *data;
 };
 
-void path_finder_fill(struct path_finder *pf);
+void path_finder_fill(struct path_finder *pf, void *data);
 void path_finder_find(struct path_finder *pf, void *data);
+int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_start(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row);

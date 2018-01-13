@@ -87,7 +87,7 @@ static void path_finder_reconstruct_path(struct path_finder *pf)
 	}
 }
 
-void path_finder_fill(struct path_finder *pf)
+void path_finder_fill(struct path_finder *pf, void *data)
 {
 	int32_t row = 0;
 	int32_t col = 0;
@@ -95,7 +95,7 @@ void path_finder_fill(struct path_finder *pf)
 		col = 0;
 		while (col < pf->cols) {
 			if (pf->map[row * pf->cols + col] != PATH_FINDER_START && pf->map[row * pf->cols + col] != PATH_FINDER_END) {
-				if (pf->fill_func(pf, col, row)) {
+				if (pf->fill_func(pf, col, row, data)) {
 					pf->map[row * pf->cols + col] = PATH_FINDER_PASSABLE;
 				} else {
 					pf->map[row * pf->cols + col] = PATH_FINDER_NON_PASSABLE;
@@ -171,6 +171,11 @@ void path_finder_find(struct path_finder *pf, void *data)
 	}
 }
 
+int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row)
+{
+	return pf->f_score[row * pf->cols + col];
+}
+
 bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row)
 {
 	bool result = false;
@@ -197,6 +202,7 @@ bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row)
 	}
 	return result;
 }
+
 void path_finder_set_start(struct path_finder *pf, int32_t col, int32_t row)
 {
 	pf->start = row * pf->cols + col;
