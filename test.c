@@ -28,13 +28,13 @@ the following restrictions:
 #define WIDTH 16
 #define HEIGHT 16
 
-double unpassable_percentage = 0.0;
+double unpassable_chance = 0.0;
 
 static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
 {
 	bool is_passable = true;
 	/* Fill the map randomly with unpassable cells */
-	if ((double)random() / (double)RAND_MAX <= unpassable_percentage) {
+	if ((double)random() / (double)RAND_MAX <= unpassable_chance) {
 		is_passable = false;
 	}
 	return is_passable;
@@ -90,18 +90,18 @@ int main(int argc, char **args)
 {
 	struct path_finder pf;
 	srand(time(NULL));
-	unpassable_percentage = ((double)random() / (double)RAND_MAX) / 3.0;
-	printf("Unpassable percentage: %f.\n", unpassable_percentage);
-	printf("                Start: S.\n");
-	printf("                  End: E.\n");
-	printf("                 Path: *.\n");
-	printf("           Unpassable: O.\n\n");
+	unpassable_chance = ((double)random() / (double)RAND_MAX) / 3.0;
 	init_path_finder(&pf, WIDTH, HEIGHT);
 	pf.fill_func = fill_cb; /* Callback to fill the initial state of the cells */
 	path_finder_fill(&pf, NULL);
 	path_finder_set_start(&pf, ((double)random() / (double)RAND_MAX) * (WIDTH - 1), ((double)random() / (double)RAND_MAX) * (HEIGHT - 1));
 	path_finder_set_end(&pf, ((double)random() / (double)RAND_MAX) * (WIDTH - 1), ((double)random() / (double)RAND_MAX) * (HEIGHT - 1));
 	path_finder_find(&pf, NULL);
+	printf("Unpassable chance: %f\n", unpassable_chance);
+	printf("            Start: S\n");
+	printf("              End: E\n");
+	printf("             Path: *\n");
+	printf("       Unpassable: O\n");
 	print_map(&pf);
 	return EXIT_SUCCESS;
 }
