@@ -131,7 +131,7 @@ void path_finder_find(struct path_finder *pf, void *data)
 			/* Top */
 			neighbors[0] = current - pf->cols;
 			/* Right */
-			if (((current + 1) % pf->cols) == 0) {
+			if ((current + 1) % pf->cols == 0) {
 				neighbors[1] = -1;
 			} else {
 				neighbors[1] = current + 1;
@@ -139,7 +139,7 @@ void path_finder_find(struct path_finder *pf, void *data)
 			/* Bottom */
 			neighbors[2] = current + pf->cols;
 			/* Left */
-			if ((current % pf->cols) == 0) {
+			if (current % pf->cols == 0) {
 				neighbors[3] = -1;
 			} else {
 				neighbors[3] = current - 1;
@@ -173,7 +173,11 @@ void path_finder_find(struct path_finder *pf, void *data)
 
 int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row)
 {
-	return pf->f_score[row * pf->cols + col];
+	int32_t score = 0;
+	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
+		score = pf->f_score[row * pf->cols + col];
+	}
+	return score;
 }
 
 bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row)
@@ -212,16 +216,28 @@ bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row)
 	return result;
 }
 
+void path_finder_set(struct path_finder *pf, int32_t col, int32_t row, int32_t mode)
+{
+	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
+		pf->start = row * pf->cols + col;
+		pf->map[pf->start] = mode;
+	}
+}
+
 void path_finder_set_start(struct path_finder *pf, int32_t col, int32_t row)
 {
-	pf->start = row * pf->cols + col;
-	pf->map[pf->start] = PATH_FINDER_START;
+	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
+		pf->start = row * pf->cols + col;
+		pf->map[pf->start] = PATH_FINDER_START;
+	}
 }
 
 void path_finder_set_end(struct path_finder *pf, int32_t col, int32_t row)
 {
-	pf->end = row * pf->cols + col;
-	pf->map[pf->end] = PATH_FINDER_END;
+	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
+		pf->end = row * pf->cols + col;
+		pf->map[pf->end] = PATH_FINDER_END;
+	}
 }
 
 bool init_path_finder(struct path_finder *pf, int32_t cols, int32_t rows)

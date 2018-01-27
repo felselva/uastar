@@ -31,6 +31,7 @@ the following restrictions:
 #define MAX_ROWS 32
 #endif
 
+/* Map cell mode */
 #define PATH_FINDER_PASSABLE 0
 #define PATH_FINDER_NON_PASSABLE 1
 #define PATH_FINDER_START 2
@@ -61,6 +62,7 @@ bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_start(struct path_finder *pf, int32_t col, int32_t row);
 bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row);
+void path_finder_set(struct path_finder *pf, int32_t col, int32_t row, int32_t mode);
 void path_finder_set_start(struct path_finder *pf, int32_t col, int32_t row);
 void path_finder_set_end(struct path_finder *pf, int32_t col, int32_t row);
 bool init_path_finder(struct path_finder *pf, int32_t cols, int32_t rows);
