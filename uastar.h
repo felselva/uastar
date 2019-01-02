@@ -21,50 +21,45 @@ the following restrictions:
 #ifndef UASTAR_H
 #define UASTAR_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
-#ifndef MAX_COLS
-#define MAX_COLS 32
+#ifndef PATH_FINDER_MAX_CELLS
+#define PATH_FINDER_MAX_CELLS 1024
 #endif
-#ifndef MAX_ROWS
-#define MAX_ROWS 32
-#endif
-
-/* Map cell mode */
-#define PATH_FINDER_PASSABLE 0
-#define PATH_FINDER_NON_PASSABLE 1
-#define PATH_FINDER_START 2
-#define PATH_FINDER_END 3
-#define PATH_FINDER_PATH 4
 
 struct path_finder {
 	int32_t cols;
 	int32_t rows;
 	int32_t start;
 	int32_t end;
-	bool has_path;
-	bool open_set[MAX_COLS * MAX_ROWS];
-	bool closed_set[MAX_COLS * MAX_ROWS];
-	int32_t parents[MAX_COLS * MAX_ROWS];
-	int32_t g_score[MAX_COLS * MAX_ROWS];
-	int32_t f_score[MAX_COLS * MAX_ROWS];
-	int32_t map[MAX_COLS * MAX_ROWS];
-	bool (*fill_func)(struct path_finder *pf, int32_t col, int32_t row, void *data);
-	int32_t (*score_func)(struct path_finder *pf, int32_t col, int32_t row, void *data);
+	uint8_t has_path;
+	uint8_t open_set[PATH_FINDER_MAX_CELLS];
+	uint8_t closed_set[PATH_FINDER_MAX_CELLS];
+	int32_t parents[PATH_FINDER_MAX_CELLS];
+	int32_t g_score[PATH_FINDER_MAX_CELLS];
+	int32_t f_score[PATH_FINDER_MAX_CELLS];
+	int32_t o_score[PATH_FINDER_MAX_CELLS];
+	uint8_t path[PATH_FINDER_MAX_CELLS];
+	uint8_t passables[PATH_FINDER_MAX_CELLS];
+	uint8_t (*fill_func)(struct path_finder *path_finder, int32_t col, int32_t row);
+	int32_t (*score_func)(struct path_finder *path_finder, int32_t col, int32_t row, void *data);
 	void *data;
 };
 
-void path_finder_fill(struct path_finder *pf, void *data);
-void path_finder_find(struct path_finder *pf, void *data);
-int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row);
-bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row);
-bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row);
-bool path_finder_is_start(struct path_finder *pf, int32_t col, int32_t row);
-bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row);
-void path_finder_set(struct path_finder *pf, int32_t col, int32_t row, int32_t mode);
-void path_finder_set_start(struct path_finder *pf, int32_t col, int32_t row);
-void path_finder_set_end(struct path_finder *pf, int32_t col, int32_t row);
-bool init_path_finder(struct path_finder *pf, int32_t cols, int32_t rows);
+int32_t path_finder_get_score(struct path_finder *path_finder, int32_t col, int32_t row);
+int32_t path_finder_get_heuristic_score(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_possible_target(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_passable(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_path(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_start(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_end(struct path_finder *path_finder, int32_t col, int32_t row);
+void path_finder_find(struct path_finder *path_finder, void *data);
+void path_finder_set_path(struct path_finder *path_finder, int32_t col, int32_t row, uint8_t path);
+void path_finder_set_start(struct path_finder *path_finder, int32_t col, int32_t row);
+void path_finder_set_end(struct path_finder *path_finder, int32_t col, int32_t row);
+void path_finder_clear_score(struct path_finder *path_finder);
+void path_finder_clear_path(struct path_finder *path_finder);
+void path_finder_fill(struct path_finder *path_finder);
+void init_path_finder(struct path_finder *path_finder);
 
 #endif

@@ -18,19 +18,23 @@ the following restrictions:
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 #include "uastar.h"
 
-static int32_t path_finder_heuristic(struct path_finder *pf, int32_t tile)
+static int32_t path_finder_heuristic(struct path_finder *path_finder, int32_t tile)
 {
-	int32_t tile_y = tile / pf->cols;
-	int32_t tile_x = tile - (tile_y * pf->cols);
-	int32_t end_y = pf->end / pf->cols;
-	int32_t end_x = pf->end - (end_y * pf->cols);
-	int32_t dx = 0;
-	int32_t dy = 0;
+	int32_t tile_y;
+	int32_t tile_x;
+	int32_t end_y;
+	int32_t end_x;
+	int32_t dx;
+	int32_t dy;
+	tile_y = tile / path_finder->cols;
+	tile_x = tile - (tile_y * path_finder->cols);
+	end_y = path_finder->end / path_finder->cols;
+	end_x = path_finder->end - (end_y * path_finder->cols);
+	dx = 0;
+	dy = 0;
 	if (tile_x > end_x) {
 		dx = tile_x - end_x;
 	} else {
@@ -44,226 +48,253 @@ static int32_t path_finder_heuristic(struct path_finder *pf, int32_t tile)
 	return dx + dy;
 }
 
-static bool path_finder_open_set_is_empty(struct path_finder *pf)
+static uint8_t path_finder_open_set_is_empty(struct path_finder *path_finder)
 {
-	bool empty = true;
-	int32_t i = 0;
-	while (i < pf->cols * pf->rows) {
-		if (pf->open_set[i]) {
-			empty = false;
-			goto done;
+	uint8_t empty;
+	int32_t i;
+	empty = 1;
+	i = 0;
+	while (i < path_finder->cols * path_finder->rows && empty == 1) {
+		if (path_finder->open_set[i] == 1) {
+			empty = 0;
 		}
-		i++;
+		i = i + 1;
 	}
-done:
 	return empty;
 }
 
-static int32_t path_finder_lowest_in_open_set(struct path_finder *pf)
+static int32_t path_finder_lowest_in_open_set(struct path_finder *path_finder)
 {
-	int32_t lowest_f = pf->cols * pf->rows;
-	int32_t current_lowest = 0;
-	int32_t i = 0;
-	while (i < pf->cols * pf->rows) {
-		if (pf->open_set[i]) {
-			if (pf->f_score[i] < lowest_f) {
-				lowest_f = pf->f_score[i];
+	int32_t lowest_f;
+	int32_t current_lowest;
+	int32_t i;
+	lowest_f = path_finder->cols * path_finder->rows;
+	current_lowest = 0;
+	i = 0;
+	while (i < path_finder->cols * path_finder->rows) {
+		if (path_finder->open_set[i] == 1) {
+			if (path_finder->f_score[i] < lowest_f) {
+				lowest_f = path_finder->f_score[i];
 				current_lowest = i;
 			}
 		}
-		i++;
+		i = i + 1;
 	}
 	return current_lowest;
 }
 
-static void path_finder_reconstruct_path(struct path_finder *pf)
+static void path_finder_reconstruct_path(struct path_finder *path_finder)
 {
-	int32_t t = pf->end;
-	while (t != pf->start) {
-		if (pf->parents[t] != pf->start) {
-			pf->map[pf->parents[t]] = PATH_FINDER_PATH;
+	int32_t i;
+	i = path_finder->end;
+	while (i != path_finder->start) {
+		if (path_finder->parents[i] != path_finder->start) {
+			path_finder->path[path_finder->parents[i]] = 1;
 		}
-		t = pf->parents[t];
+		i = path_finder->parents[i];
 	}
 }
 
-void path_finder_fill(struct path_finder *pf, void *data)
+void path_finder_fill(struct path_finder *path_finder)
 {
-	int32_t row = 0;
-	int32_t col = 0;
-	while (row < pf->rows) {
+	int32_t row;
+	row = 0;
+	while (row < path_finder->rows) {
+		int32_t col;
 		col = 0;
-		while (col < pf->cols) {
-			if (pf->map[row * pf->cols + col] != PATH_FINDER_START && pf->map[row * pf->cols + col] != PATH_FINDER_END) {
-				if (pf->fill_func(pf, col, row, data)) {
-					pf->map[row * pf->cols + col] = PATH_FINDER_PASSABLE;
-				} else {
-					pf->map[row * pf->cols + col] = PATH_FINDER_NON_PASSABLE;
-				}
-			}
-			col++;
+		while (col < path_finder->cols) {
+			path_finder->passables[row * path_finder->cols + col] = path_finder->fill_func(path_finder, col, row);
+			path_finder->o_score[row * path_finder->cols + col] = 0;
+			col = col + 1;
 		}
-		row++;
+		row = row + 1;
 	}
 }
 
-void path_finder_find(struct path_finder *pf, void *data)
+void path_finder_find(struct path_finder *path_finder, void *data)
 {
-	bool run = true;
-	int32_t neighbors[4] = {0};
-	int32_t j = 0;
-	int32_t n = 0;
-	int32_t tmp_g_score = 0;
-	int32_t current = 0;
-	pf->open_set[pf->start] = true;
-	while (run) {
-		current = path_finder_lowest_in_open_set(pf);
-		if (current == pf->end) {
-			path_finder_reconstruct_path(pf);
-			run = false;
-			pf->has_path = true;
-		} else if (path_finder_open_set_is_empty(pf)) {
-			run = false;
-			pf->has_path = false;
+	uint8_t run;
+	int32_t neighbors[4];
+	int32_t current;
+	current = 0;
+	path_finder->open_set[path_finder->start] = 1;
+	neighbors[0] = 0;
+	neighbors[1] = 0;
+	neighbors[2] = 0;
+	neighbors[3] = 0;
+	run = 1;
+	while (run == 1) {
+		current = path_finder_lowest_in_open_set(path_finder);
+		if (current == path_finder->end) {
+			path_finder_reconstruct_path(path_finder);
+			run = 0;
+			path_finder->has_path = 1;
+		} else if (path_finder_open_set_is_empty(path_finder) == 1) {
+			run = 0;
+			path_finder->has_path = 0;
 		} else {
-			pf->open_set[current] = false;
-			pf->closed_set[current] = true;
+			int32_t j;
+			int32_t tmp_g_score;
+			path_finder->open_set[current] = 0;
+			path_finder->closed_set[current] = 1;
 			/* Top */
-			neighbors[0] = current - pf->cols;
+			neighbors[0] = current - path_finder->cols;
 			/* Right */
-			if ((current + 1) % pf->cols == 0) {
+			if ((current + 1) % path_finder->cols == 0) {
 				neighbors[1] = -1;
 			} else {
 				neighbors[1] = current + 1;
 			}
 			/* Bottom */
-			neighbors[2] = current + pf->cols;
+			neighbors[2] = current + path_finder->cols;
 			/* Left */
-			if (current % pf->cols == 0) {
+			if (current % path_finder->cols == 0) {
 				neighbors[3] = -1;
 			} else {
 				neighbors[3] = current - 1;
 			}
-			j = 0;
-			n = 0;
-			tmp_g_score = 0;
 			/* Neighbors */
-			for (j = 0; j < 4; j++) {
+			tmp_g_score = 0;
+			j = 0;
+			while (j < 4) {
+				int32_t n;
 				n = neighbors[j];
-				if (n > -1 && n < pf->rows * pf->cols && !pf->closed_set[n]) {
-					if (pf->map[n] == PATH_FINDER_NON_PASSABLE) {
-						pf->closed_set[n] = true;
+				if (n > -1 && n < path_finder->rows * path_finder->cols && path_finder->closed_set[n] == 0) {
+					if (path_finder->passables[n] == 0) {
+						path_finder->closed_set[n] = 1;
 					} else {
-						tmp_g_score = pf->g_score[current] + 1;
-						if (!pf->open_set[n] || tmp_g_score < pf->g_score[n]) {
-							pf->parents[n] = current;
-							pf->g_score[n] = tmp_g_score;
-							pf->f_score[n] = pf->g_score[n] + path_finder_heuristic(pf, n);
-							if (pf->score_func) {
-								pf->f_score[n] = pf->f_score[n] + pf->score_func(pf, n % pf->cols, n / pf->cols, data);
+						tmp_g_score = path_finder->g_score[current] + 1;
+						if (path_finder->open_set[n] == 0 || tmp_g_score < path_finder->g_score[n]) {
+							path_finder->parents[n] = current;
+							path_finder->g_score[n] = tmp_g_score;
+							path_finder->f_score[n] = path_finder->g_score[n] + path_finder_heuristic(path_finder, n);
+							if (path_finder->score_func != NULL) {
+								path_finder->f_score[n] = path_finder->f_score[n] + path_finder->score_func(path_finder, n / path_finder->cols, n % path_finder->cols, data);
 							}
-							pf->open_set[n] = true;
+							path_finder->open_set[n] = 1;
 						}
 					}
 				}
+				j = j + 1;
 			}
 		}
 	}
 }
 
-int32_t path_finder_score(struct path_finder *pf, int32_t col, int32_t row)
+int32_t path_finder_get_score(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	int32_t score = 0;
-	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
-		score = pf->f_score[row * pf->cols + col];
-	}
-	return score;
+	return path_finder->o_score[row * path_finder->cols + col];
 }
 
-bool path_finder_is_passable(struct path_finder *pf, int32_t col, int32_t row)
+int32_t path_finder_get_heuristic_score(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	bool result = false;
-	if (pf->map[row * pf->cols + col] != PATH_FINDER_NON_PASSABLE) {
-		result = true;
+	return path_finder->f_score[row * path_finder->cols + col];
+}
+
+uint8_t path_finder_is_passable(struct path_finder *path_finder, int32_t col, int32_t row)
+{
+	uint8_t result = 0;
+	if (path_finder->passables[row * path_finder->cols + col] == 1) {
+		result = 1;
 	}
 	return result;
 }
 
-bool path_finder_is_path(struct path_finder *pf, int32_t col, int32_t row)
+uint8_t path_finder_is_path(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	bool result = false;
-	if (pf->map[row * pf->cols + col] == PATH_FINDER_PATH) {
-		result = true;
+	uint8_t result;
+	result = 0;
+	if (path_finder->path[row * path_finder->cols + col] == 1) {
+		result = 1;
 	}
 	return result;
 }
 
-bool path_finder_is_start(struct path_finder *pf, int32_t col, int32_t row)
+uint8_t path_finder_is_start(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	bool result = false;
-	if (pf->map[row * pf->cols + col] == PATH_FINDER_START) {
-		result = true;
+	uint8_t result;
+	result = 0;
+	if (row * path_finder->cols + col == path_finder->start) {
+		result = 1;
 	}
 	return result;
 }
 
-bool path_finder_is_end(struct path_finder *pf, int32_t col, int32_t row)
+uint8_t path_finder_is_end(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	bool result = false;
-	if (pf->map[row * pf->cols + col] == PATH_FINDER_END) {
-		result = true;
+	uint8_t result;
+	result = 0;
+	if (row * path_finder->cols + col == path_finder->end) {
+		result = 1;
 	}
 	return result;
 }
 
-void path_finder_set(struct path_finder *pf, int32_t col, int32_t row, int32_t mode)
+void path_finder_set_path(struct path_finder *path_finder, int32_t col, int32_t row, uint8_t path)
 {
-	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
-		pf->start = row * pf->cols + col;
-		pf->map[pf->start] = mode;
+	if (col >= 0 && col < path_finder->cols && row >= 0 && row < path_finder->rows) {
+		path_finder->path[path_finder->start] = path;
 	}
 }
 
-void path_finder_set_start(struct path_finder *pf, int32_t col, int32_t row)
+void path_finder_set_start(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
-		pf->start = row * pf->cols + col;
-		pf->map[pf->start] = PATH_FINDER_START;
+	if (col >= 0 && col < path_finder->cols && row >= 0 && row < path_finder->rows) {
+		path_finder->start = row * path_finder->cols + col;
 	}
 }
 
-void path_finder_set_end(struct path_finder *pf, int32_t col, int32_t row)
+void path_finder_set_end(struct path_finder *path_finder, int32_t col, int32_t row)
 {
-	if (col >= 0 && col < pf->cols && row >= 0 && row < pf->rows) {
-		pf->end = row * pf->cols + col;
-		pf->map[pf->end] = PATH_FINDER_END;
+	if (col >= 0 && col < path_finder->cols && row >= 0 && row < path_finder->rows) {
+		path_finder->end = row * path_finder->cols + col;
 	}
 }
 
-bool init_path_finder(struct path_finder *pf, int32_t cols, int32_t rows)
+void path_finder_clear_score(struct path_finder *path_finder)
 {
-	bool result = true;
-	int32_t i = 0;
-	if (cols > MAX_COLS || rows > MAX_ROWS || cols < 1 || rows < 1) {
-		result = false;
-		goto done;
+	int32_t i;
+	i = 0;
+	while (i < PATH_FINDER_MAX_CELLS) {
+		path_finder->o_score[i] = 0;
+		i = i + 1;
 	}
-	while (i < MAX_COLS * MAX_ROWS) {
-		pf->open_set[i] = false;
-		pf->closed_set[i] = false;
-		pf->parents[i] = 0;
-		pf->g_score[i] = 0;
-		pf->f_score[i] = 0;
-		pf->map[i] = PATH_FINDER_PASSABLE;
-		i++;
+}
+
+void path_finder_clear_path(struct path_finder *path_finder)
+{
+	int32_t i;
+	i = 0;
+	while (i < PATH_FINDER_MAX_CELLS) {
+		path_finder->open_set[i] = 0;
+		path_finder->closed_set[i] = 0;
+		path_finder->parents[i] = 0;
+		path_finder->g_score[i] = 0;
+		path_finder->f_score[i] = 0;
+		path_finder->path[i] = 0;
+		i = i + 1;
 	}
-	pf->rows = rows;
-	pf->cols = cols;
-	pf->start = 0;
-	pf->end = 0;
-	pf->has_path = false;
-	pf->fill_func = NULL;
-	pf->score_func = NULL;
-done:
-	return result;
+	path_finder->has_path = 0;
+}
+
+void init_path_finder(struct path_finder *path_finder)
+{
+	int32_t i;
+	i = 0;
+	while (i < PATH_FINDER_MAX_CELLS) {
+		path_finder->open_set[i] = 0;
+		path_finder->closed_set[i] = 0;
+		path_finder->parents[i] = 0;
+		path_finder->g_score[i] = 0;
+		path_finder->f_score[i] = 0;
+		path_finder->o_score[i] = 0;
+		path_finder->path[i] = 0;
+		path_finder->passables[i] = 0;
+		i = i + 1;
+	}
+	path_finder->rows = 0;
+	path_finder->cols = 0;
+	path_finder->start = 0;
+	path_finder->end = 0;
+	path_finder->has_path = 0;
 }

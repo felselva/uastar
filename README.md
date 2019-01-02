@@ -1,75 +1,85 @@
 # Micro A Star Path Finder
 
-[![Build Status](https://travis-ci.org/ferreiradaselva/uastar.svg?branch=master)](https://travis-ci.org/ferreiradaselva/uastar)
-
 This is a minimal A* path finder implementation in C:
 
 - Fast.
-- No memory dynamic allocation.
+- No dynamic memory allocation.
 
 ## Usage
 
-The maximum size of the map is defined by `MAX_COLS` and `MAX_ROWS`. Those are already declared in the header `uastar.h`, but can be modified to support a larger map.
+The maximum size of the map is defined by the macro `PATH_FINDER_MAX_CELLS`, which can be modified to support larger maps.
+
+The size of the map is defined by the variables `cols` and `rows` in the `path_finder` structure, and the total of cells must be smaller or equal to `PATH_FINDER_MAX_CELLS`.
 
 ```c
-struct path_finder pf = {0};
-init_path_finder(&pf, cols, rows);
-pf.data = game;
-pf.fill_func = fill_cb; /* Callback to fill the initial state of the cells */
-pf.score_func = score_cb; /* Callback to add custom score to the path */
-path_finder_fill(&pf, game_object);
-path_finder_set_start(&pf, from_col, from_row);
-path_finder_set_end(&pf, to_col, to_row);
-path_finder_find(&pf, game_object);
+struct path_finder path_finder = {0};
+path_finder.cols = 24;
+path_finder.rows = 24;
+init_path_finder(&path_finder);
+path_finder.data = game;
+/* Callback to fill the initial state of the cells */
+path_finder.fill_func = fill_cb;
+/* Callback to set the custom score to the cells while finding a path */
+path_finder.score_func = score_cb;
+/* Fill with the initial state of the cells and the custom score */
+path_finder_fill(&path_finder, game_object);
+path_finder_set_start(&path_finder, from_col, from_row);
+path_finder_set_end(&path_finder, to_col, to_row);
+/* Find the path */
+path_finder_find(&path_finder, game_object);
 ```
 
-The initialization (`init_path_finder`) must take a number of columns and rows smaller than or equal to `MAX_COLS` and `MAX_ROWS`.
-
-The callback `fill_func` is necessary to define which cells are passable and which are non-passable. Te callback also takes a custom pointer, useful to point to a specific object:
+The callback `fill_func` is necessary to define which cells are passable and which are non-passable:
 
 ```c
 /* The parameters `col` and `row` indicate the cell of the map we are setting as passable or non-passable */
-static bool fill_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
+static bool fill_cb(struct path_finder *path_finder, int32_t col, int32_t row, void *data)
 {
-	struct game *game = pf->data;
-	struct game_object *game_object = data;
-	bool is_passable = true;
-	if (is_wall(game, col, row)) {
-		is_passable = false;
-		if (can_jump_walls(game_object)) {
-			is_passable = true;
-		}
+	struct game *game;
+	struct game_object *game_object;
+	bool is_passable;
+	game = path_finder->data;
+	game_object = data;
+	is_passable = 0;
+	if (is_wall(game, col, row) == 1) {
+		is_passable = 0;
 	}
 	return is_passable;
 }
 ```
 
-The callback `score_func` is optional and is called during the `path_finder_find` execution. The callback also takes a custom pointer, useful to point to a specific object. Use it to add custom weight to the cells:
+The callback `score_func` is optional and is called during the `path_finder_find` execution. The callback also takes a custom pointer, useful to point to a specific object. Use it to add custom score to the cells:
 
 ```c
 /* The parameters `col` and `row` indicate the cell of the map we are setting a score */
-static int32_t score_cb(struct path_finder *pf, int32_t col, int32_t row, void *data)
+static int32_t score_cb(struct path_finder *path_finder, int32_t col, int32_t row, void *data)
 {
-	struct game *game = pf->data;
-	struct game_object *game_object = data;
-	int32_t value = 0;
-	if (is_danger_zone(game, col, row)) {
-		value = 5; /* The higher the value, more avoided the cell is */
-		if (is_fearless(game_object)) {
+	struct game *game;
+	struct game_object *game_object;
+	int32_t value;
+	game = path_finder->data;
+	game_object = data;
+	value = 0;
+	if (is_danger_zone(game, col, row) == 1) {
+		/* The higher the value, the more avoided the cell is */
+		value = 5;
+		if (is_fearless(game_object) == 1) {
+			/* Unless the character is fearless */
 			value = 0;
 		}
 	}
-	return value; /* Value incremented in the cell score */
+	/* The value returned is incremented in the cell score */
+	return value;
 }
 ```
 
-To check if a cell is a path, access the path finder array directly or use `path_finder_is_path` (be careful, this function doesn't check the passed values of column and row are inside the range of the map dimensions):
+To check if a cell is a path, access the path finder array directly or use `path_finder_is_path` (be careful, this function doesn't check the passed values of column and row are inside the range of the map dimensions, as they should be):
 
 ```c
-bool is_cell_path = path_finder_is_path(&pf, col, row);
+cell_is_path = path_finder_is_path(&path_finder, col, row);
 ```
 
-If a path is found, the value of `has_path` inside the structure `path_finder` is set to `true`.
+If a path is found by the path finder, the value of `has_path` inside the structure `path_finder` is set to `1`.
 
 ## LICENSE
 
