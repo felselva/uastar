@@ -17,7 +17,8 @@ the following restrictions:
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 
-
+Compiling with GCC:
+  gcc test.c uastar.c -o test
 */
 
 #include <stdlib.h>
