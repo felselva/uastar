@@ -56,13 +56,21 @@ void print_map(struct path_finder *path_finder)
 		col = 0;
 		printf("|");
 		while (col < path_finder->cols) {
-			if (path_finder_is_start(path_finder, col, row)) {
-				printf(" S");
-			} else if (path_finder_is_end(path_finder, col, row)) {
-				printf(" E");
-			} else if (path_finder_is_path(path_finder, col, row)) {
+			if (path_finder_is_start(path_finder, col, row) == 1) {
+				if (path_finder_is_passable(path_finder, col, row) == 1) {
+					printf(" S");
+				} else {
+					printf(" s");
+				}
+			} else if (path_finder_is_end(path_finder, col, row) == 1) {
+				if (path_finder_is_passable(path_finder, col, row) == 1) {
+					printf(" E");
+				} else {
+					printf(" e");
+				}
+			} else if (path_finder_is_path(path_finder, col, row) == 1) {
 				printf(" *");
-			} else if (!path_finder_is_passable(path_finder, col, row)) {
+			} else if (!path_finder_is_passable(path_finder, col, row) == 1) {
 				printf(" O");
 			} else {
 				printf("  ");
@@ -96,8 +104,8 @@ int main(int argc, char **args)
 	srand(atoi(args[2]));
 	passable_chance = (double)atoi(args[1]) / 100.0;
 	init_path_finder(&path_finder);
-	path_finder.cols = 16;
-	path_finder.rows = 16;
+	path_finder.cols = 32;
+	path_finder.rows = 32;
 	path_finder.fill_func = fill_cb;
 	path_finder.score_func = NULL;
 	path_finder_fill(&path_finder);
@@ -105,8 +113,8 @@ int main(int argc, char **args)
 	path_finder_set_end(&path_finder, ((double)rand() / (double)RAND_MAX) * (path_finder.cols - 1), ((double)rand() / (double)RAND_MAX) * (path_finder.rows - 1));
 	path_finder_find(&path_finder, NULL);
 	printf("passable chance: %0.1f\n", passable_chance * 100.0);
-	printf("            Start: S\n");
-	printf("              End: E\n");
+	printf("            Start: S (or s if fall in a wall)\n");
+	printf("              End: E (or e if fall in a wall)\n");
 	printf("             Path: *\n");
 	printf("       unpassable: O\n");
 	print_map(&path_finder);
