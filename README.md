@@ -33,13 +33,11 @@ The callback `fill_func` is necessary to define which cells are passable and whi
 
 ```c
 /* The parameters `col` and `row` indicate the cell of the map we are setting as passable or non-passable */
-static bool fill_cb(struct path_finder *path_finder, int32_t col, int32_t row, void *data)
+static bool fill_cb(struct path_finder *path_finder, int32_t col, int32_t row)
 {
 	struct game *game;
-	struct game_object *game_object;
-	bool is_passable;
+	uint8_t is_passable;
 	game = path_finder->data;
-	game_object = data;
 	is_passable = 0;
 	if (is_wall(game, col, row) == 1) {
 		is_passable = 0;
