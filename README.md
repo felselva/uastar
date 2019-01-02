@@ -85,7 +85,7 @@ If a path is found by the path finder, the value of `has_path` inside the struct
 
 The source code of this project is licensed under the terms of the ZLIB license:
 
-Copyright (C) 2017 Felipe Ferreira da Silva
+Copyright (c) 2017 Felipe Ferreira da Silva
 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 

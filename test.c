@@ -96,21 +96,44 @@ void print_map(struct path_finder *path_finder)
 
 int main(int argc, char **args)
 {
+	int32_t width;
+	int32_t height;
+	int32_t s_col;
+	int32_t s_row;
+	int32_t e_col;
+	int32_t e_row;
 	struct path_finder path_finder;
-	if (argc != 3) {
-		puts("Usage: test [passable chance 0-100] [random seed integer]");
+	if (argc != 9) {
+		puts("Usage: test [passable chance 0-100] [random seed integer] [start column] [start row] [end column] [end row] [width <= 32] [height <= 32]");
 		goto done;
 	}
-	srand(atoi(args[2]));
 	passable_chance = (double)atoi(args[1]) / 100.0;
+	srand(atoi(args[2]));
+	s_col = atoi(args[3]);
+	s_row = atoi(args[4]);
+	e_col = atoi(args[5]);
+	e_row = atoi(args[6]);
+	width = atoi(args[7]);
+	height = atoi(args[8]);
+	if (width < 1 || width > 32 || height < 1 || height > 32) {
+		puts("Invalid width or height.");
+		goto done;
+	}
+	if (s_col < 0 || s_col > width - 1
+	|| e_col < 0 || e_col > width - 1
+	|| s_row < 0 || s_row > height - 1
+	|| e_row < 0 || e_row > height - 1) {
+		puts("Invalid coordinates of start or end.");
+		goto done;
+	}
 	init_path_finder(&path_finder);
-	path_finder.cols = 32;
-	path_finder.rows = 32;
+	path_finder.cols = width;
+	path_finder.rows = height;
 	path_finder.fill_func = fill_cb;
 	path_finder.score_func = NULL;
 	path_finder_fill(&path_finder);
-	path_finder_set_start(&path_finder, ((double)rand() / (double)RAND_MAX) * (path_finder.cols - 1), ((double)rand() / (double)RAND_MAX) * (path_finder.rows - 1));
-	path_finder_set_end(&path_finder, ((double)rand() / (double)RAND_MAX) * (path_finder.cols - 1), ((double)rand() / (double)RAND_MAX) * (path_finder.rows - 1));
+	path_finder_set_start(&path_finder, s_col, s_row);
+	path_finder_set_end(&path_finder, e_col, e_row);
 	path_finder_find(&path_finder, NULL);
 	printf("passable chance: %0.1f\n", passable_chance * 100.0);
 	printf("            Start: S (or s if fall in a wall)\n");
