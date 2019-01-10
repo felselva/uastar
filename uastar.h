@@ -33,14 +33,10 @@ struct path_finder {
 	int32_t start;
 	int32_t end;
 	uint8_t has_path;
-	uint8_t open_set[PATH_FINDER_MAX_CELLS];
-	uint8_t closed_set[PATH_FINDER_MAX_CELLS];
+	uint8_t state[PATH_FINDER_MAX_CELLS]; /* Bit flags */
 	int32_t parents[PATH_FINDER_MAX_CELLS];
 	int32_t g_score[PATH_FINDER_MAX_CELLS];
 	int32_t f_score[PATH_FINDER_MAX_CELLS];
-	int32_t o_score[PATH_FINDER_MAX_CELLS];
-	uint8_t path[PATH_FINDER_MAX_CELLS];
-	uint8_t passables[PATH_FINDER_MAX_CELLS];
 	uint8_t (*fill_func)(struct path_finder *path_finder, int32_t col, int32_t row);
 	int32_t (*score_func)(struct path_finder *path_finder, int32_t col, int32_t row, void *data);
 	void *data;
@@ -51,15 +47,18 @@ int32_t path_finder_get_heuristic_score(struct path_finder *path_finder, int32_t
 uint8_t path_finder_is_possible_target(struct path_finder *path_finder, int32_t col, int32_t row);
 uint8_t path_finder_is_passable(struct path_finder *path_finder, int32_t col, int32_t row);
 uint8_t path_finder_is_path(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_closed(struct path_finder *path_finder, int32_t col, int32_t row);
+uint8_t path_finder_is_open(struct path_finder *path_finder, int32_t col, int32_t row);
 uint8_t path_finder_is_start(struct path_finder *path_finder, int32_t col, int32_t row);
 uint8_t path_finder_is_end(struct path_finder *path_finder, int32_t col, int32_t row);
+void path_finder_begin(struct path_finder *path_finder);
+uint8_t path_finder_find_step(struct path_finder *path_finder, void *data);
 void path_finder_find(struct path_finder *path_finder, void *data);
-void path_finder_set_path(struct path_finder *path_finder, int32_t col, int32_t row, uint8_t path);
 void path_finder_set_start(struct path_finder *path_finder, int32_t col, int32_t row);
 void path_finder_set_end(struct path_finder *path_finder, int32_t col, int32_t row);
 void path_finder_clear_score(struct path_finder *path_finder);
 void path_finder_clear_path(struct path_finder *path_finder);
 void path_finder_fill(struct path_finder *path_finder);
-void init_path_finder(struct path_finder *path_finder);
+void path_finder_initialize(struct path_finder *path_finder);
 
 #endif

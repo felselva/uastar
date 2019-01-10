@@ -79,6 +79,55 @@ cell_is_path = path_finder_is_path(&path_finder, col, row);
 
 If a path is found by the path finder, the value of `has_path` inside the structure `path_finder` is set to `1`.
 
+It is also possible to process only one step of the path finder at a time, useful to divide the processing in multiple frames:
+
+```c
+uint8_t still_working;
+path_finder_begin(&path_finder);
+still_working = path_finder_find_step(&path_finder, NULL);
+```
+
+Or, to run the entire process, but drawing the intermediate steps:
+
+```c
+path_finder_begin(&path_finder);
+while (path_finder_find_step(&path_finder, NULL) == 1) {
+	draw();
+}
+```
+
+## Test
+
+The test generates an output with the map:
+
+```
+./test 0 80 12345 0 0 23 11 24 13
+  Passable chance: 80
+            Start: 'S' (or 's' if fall in a wall)
+              End: 'E' (or 'e' if fall in a wall)
+        Open path: 'O'
+      Closed path: 'X'
+             Path: '*'
+       Unpassable: '#'
+Map:
+##########################
+#S#    #      #       #  #
+#****###  #      # ##    #
+### **#******##    #     #
+###  ***#  #**  #   # ## #
+#  #  ## #   * # #  #  # #
+#   ##  #    *# ##       #
+## #   # #  #****#       #
+#    #     #    *******  #
+#   #  #      #  #    *# #
+# #  #  ##         # #**##
+# # #       ##         **#
+#                       E#
+#  #    ## # ### #    #  #
+##########################
+A path was found!
+```
+
 ## LICENSE
 
 The source code of this project is licensed under the terms of the ZLIB license:
