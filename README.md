@@ -1,9 +1,6 @@
 # Micro A Star Path Finder
 
-This is a minimal A* path finder implementation in C:
-
-- Fast.
-- No dynamic memory allocation.
+This is a minimal A* path finder implementation in C, without any dynamic memory allocation.
 
 ## Usage
 
